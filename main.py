@@ -4,7 +4,7 @@ from field import Field
 import time
 
 
-# Создаем цвета
+# Creating colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -17,26 +17,27 @@ WIDTH = 400
 HEIGHT = 600
 FPS = 30
 
+# Creating coordinates
 x = 300
 y = 300
 
 x_change = 0
 y_change = 0
 
-# Создаем игру и окно
+# Creating a game and a window
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("My Game")
 clock = pygame.time.Clock()
-# Цикл игры
-field = Field(screen)
+
+# The game cycle
 running = True
 while running:
-    # Держим цикл на правильной скорости
-    # Ввод процесса (события)
+
+    # Entering a process (event)
     for event in pygame.event.get():
 
-        # Перемещаем голову змейки по клавишам: вверх, вниз, направо, налево
+        # Move the snake's head on the keys: up, down, right, left
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
@@ -53,15 +54,22 @@ while running:
                 x_change = 0
                 y_change = -10
 
+    # Recording coordinate changes
     x += x_change
     y += y_change
+
+    # Filling the screen with black
     screen.fill(BLACK)
+
+    # Creating a snake head
     pygame.draw.rect(screen, RED, [x, y, 10, 10])
 
     pygame.display.update()
 
+    # Keeping the cycle on the correct speed
     clock.tick(30)
     time.sleep(0.1)
 
+# Exit
 pygame.quit()
 quit()
