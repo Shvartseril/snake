@@ -16,10 +16,6 @@ class Snake:
     def __init__(self, position: list[tuple[int, int]]):
         self.position = position
 
-    # self.position = []
-    # self.position = [(1, 2), (1, 1), (1, 0), (0, 0)]
-    # self.position = [(1, 2), (1, 1), (1, 0), (0, 0)]
-
     def move(self, direction: Direction):
         self.position[1:] = self.position[:-1]
         if direction == Direction.UP:
