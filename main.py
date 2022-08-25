@@ -18,7 +18,8 @@ REMOTE_COLOR = (0, 204, 205)
 
 WIDTH = 400
 HEIGHT = 600
-FPS = 15
+FPS = 10
+direction = Direction.UP
 
 
 # Creating a game and a window
@@ -41,13 +42,14 @@ while running:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
-                snake.move(Direction.LEFT)
+                direction = Direction.LEFT
             elif event.key == pygame.K_RIGHT:
-                snake.move(Direction.RIGHT)
+                direction = Direction.RIGHT
             elif event.key == pygame.K_DOWN:
-                snake.move(Direction.DOWN)
+                direction = Direction.DOWN
             elif event.key == pygame.K_UP:
-                snake.move(Direction.UP)
+                direction = Direction.UP
+    snake.move(direction)
 
     # Filling the screen with black
     screen.fill(BLACK)
