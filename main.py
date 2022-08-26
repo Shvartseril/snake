@@ -1,11 +1,21 @@
 import pygame
-import time
 from snake import Snake, Direction
+from random import *
 
 
-def draw_square(screen, position: tuple[int, int]):
+# Function for creating a square
+def draw_square(screen, position: tuple[int, int], color: tuple[int, int, int]):
     position = (position[0] * 10 + 195, position[1] * (-10) + 295)
-    pygame.draw.rect(screen, RED, [*position, 10, 10])
+    pygame.draw.rect(screen, color, [*position, 10, 10])
+
+
+# Function for creating messages
+def message(screen, msg: str, coordinates: tuple[int, int], color: tuple[int, int, int], font_name: str, font_size: int, bold: bool = False,
+            italic: bool = False):
+    font = pygame.font.SysFont(font_name, font_size, bold, italic)
+    msg_screen = font.render(msg, False, color)
+    screen.blit(msg_screen, coordinates)
+    pygame.display.update()
 
 
 # Creating colors
@@ -19,16 +29,21 @@ REMOTE_COLOR = (0, 204, 205)
 WIDTH = 400
 HEIGHT = 600
 FPS = 10
-direction = Direction.UP
 
-
-# Creating a game and a window
+# Initializing objects
 pygame.init()
+pygame.font.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("My Game")
 clock = pygame.time.Clock()
 
-snake = Snake([(0, 0), (-1, 0), (-2, 0)])
+# Creating a snake
+snake = Snake([(0, 0), (-1, 0), (-2, 0), (-3, 0), (-4, 0), (-5, 0), (-6, 0), (-7, 0), (-8, 0), (-9, 0), (-10, 0)])
+
+# Creating food
+snake_food = (randint(-19, 19), randint(-29, 29))
+
+direction = False
 
 # The game cycle
 running = True
@@ -49,15 +64,24 @@ while running:
                 direction = Direction.DOWN
             elif event.key == pygame.K_UP:
                 direction = Direction.UP
-    snake.move(direction)
+
+    if direction:
+        snake.move(direction)
 
     # Filling the screen with black
     screen.fill(BLACK)
 
-    # Creating a snake head
+    # Creating a snake
     for i in snake.position:
-        draw_square(screen, i)
+        draw_square(screen, i, RED)
 
+    if snake.position[0] == snake_food:
+        snake_food = (randint(-19, 19), randint(-29, 29))
+        FPS += 0.5
+
+    draw_square(screen, snake_food, GREEN)
+
+    # Update of screen
     pygame.display.update()
 
     # Keeping the cycle on the correct speed
