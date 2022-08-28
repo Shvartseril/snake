@@ -29,6 +29,15 @@ class Snake:
         if len(self.position) != len(set(self.position)):
             raise SelfIntersection()
 
+    def eating(self):
+        self.position.append((self.position[-1]))
+
+    def going_abroad(self):
+        if self.position[0][0] >= 21 or self.position[0][0] <= -21:
+            self.position[0] = -self.position[0][0], self.position[0][1]
+        if self.position[0][1] >= 31 or self.position[0][1] <= -31:
+            self.position[0] = self.position[0][0], -self.position[0][1]
+
     def __repr__(self):
         return str(self.position)
 

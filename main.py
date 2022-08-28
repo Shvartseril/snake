@@ -38,7 +38,7 @@ pygame.display.set_caption("My Game")
 clock = pygame.time.Clock()
 
 # Creating a snake
-snake = Snake([(0, 0), (-1, 0), (-2, 0), (-3, 0), (-4, 0), (-5, 0), (-6, 0), (-7, 0), (-8, 0), (-9, 0), (-10, 0)])
+snake = Snake([(0, 0)])
 
 # Creating food
 snake_food = (randint(-19, 19), randint(-29, 29))
@@ -68,6 +68,9 @@ while running:
     if direction:
         snake.move(direction)
 
+        # creating a border
+        snake.going_abroad()
+
     # Filling the screen with black
     screen.fill(BLACK)
 
@@ -77,7 +80,8 @@ while running:
 
     if snake.position[0] == snake_food:
         snake_food = (randint(-19, 19), randint(-29, 29))
-        FPS += 0.5
+        FPS += 0.3
+        snake.eating()
 
     draw_square(screen, snake_food, GREEN)
 
