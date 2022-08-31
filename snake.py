@@ -33,10 +33,18 @@ class Snake:
         self.position.append((self.position[-1]))
 
     def going_abroad(self):
-        if self.position[0][0] >= 21 or self.position[0][0] <= -21:
-            self.position[0] = -self.position[0][0], self.position[0][1]
-        if self.position[0][1] >= 31 or self.position[0][1] <= -31:
-            self.position[0] = self.position[0][0], -self.position[0][1]
+        # if self.position[0][0] > 19 or self.position[0][0] < -20:
+        #     self.position[0] = -self.position[0][0], self.position[0][1]
+        # if self.position[0][1] >= 30 or self.position[0][1] <= -30:
+        #     self.position[0] = self.position[0][0], -self.position[0][1]
+        if self.position[0][0] < -20:
+            self.position[0] = 19, self.position[0][1]
+        if self.position[0][0] > 19:
+            self.position[0] = -20, self.position[0][1]
+        if self.position[0][1] < -29:
+            self.position[0] = self.position[0][0], 30
+        if self.position[0][1] > 30:
+            self.position[0] = self.position[0][0], -30
 
     def __repr__(self):
         return str(self.position)
