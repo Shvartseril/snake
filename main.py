@@ -1,6 +1,7 @@
 import pygame
 from snake import Snake, Direction
 from random import *
+import time
 
 
 def records_record(score):
@@ -40,6 +41,7 @@ REMOTE_COLOR = (0, 204, 205)
 WIDTH = 400
 HEIGHT = 600
 FPS = 10
+winner = ''
 
 # Initializing objects
 pygame.init()
@@ -49,13 +51,14 @@ pygame.display.set_caption("My Game")
 clock = pygame.time.Clock()
 
 # Creating a snake
-snake = Snake([(0, 0)])
+snake = Snake([(8, 0)])
+second_snake = Snake([(-8, 0)])
 
 # Creating food
 snake_food = (randint(-19, 19), randint(-29, 29))
 
-direction = False
-score = 0
+# creating directions
+direction, direction_for_second_snake = False, False
 
 # The game cycle
 running = True
@@ -64,46 +67,71 @@ while running:
     # Entering a process (event)
     for event in pygame.event.get():
 
-        # Move the snake's head on the keys: up, down, right, left, w, s, d, a
+        # Creating movement for two snakes
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit()
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT or event.key == 97:
+            if event.key == pygame.K_LEFT:
                 direction = Direction.LEFT
-            elif event.key == pygame.K_RIGHT or event.key == 100:
+            elif event.key == pygame.K_RIGHT:
                 direction = Direction.RIGHT
-            elif event.key == pygame.K_DOWN or event.key == 115:
+            elif event.key == pygame.K_DOWN:
                 direction = Direction.DOWN
-            elif event.key == pygame.K_UP or event.key == 119:
+            elif event.key == pygame.K_UP:
                 direction = Direction.UP
+            elif event.key == 97:
+                direction_for_second_snake = Direction.LEFT
+            elif event.key == 100:
+                direction_for_second_snake = Direction.RIGHT
+            elif event.key == 115:
+                direction_for_second_snake = Direction.DOWN
+            elif event.key == 119:
+                direction_for_second_snake = Direction.UP
 
     if direction:
         snake.move(direction)
 
-        # creating a border
-        snake.going_abroad()
+    if direction_for_second_snake:
+        second_snake.move(direction_for_second_snake)
+
+    # creating a border
+    snake.going_abroad()
+    second_snake.going_abroad()
 
     # Filling the screen with black
     screen.fill(BLACK)
 
-    # Creating a snake
+    # Creating snakes
     for i in snake.position:
         draw_square(screen, i, RED)
+
+    for i in second_snake.position:
+        draw_square(screen, i, BLUE)
 
     if snake.position[0] == snake_food:
         snake_food = (randint(-19, 19), randint(-29, 29))
         FPS += 0.3
         snake.eating()
-        score += 1
 
-    record = records_record(score)
+    if second_snake.position[0] == snake_food:
+        snake_food = (randint(-19, 19), randint(-29, 29))
+        FPS += 0.3
+        second_snake.eating()
+
+    # Achieving 20 points to win
+    if snake.score == 20:
+        winner = 'snake1 won!'
+        running = False
+    if second_snake.score == 20:
+        winner = 'snake2 won!'
+        running = False
 
     draw_square(screen, snake_food, GREEN)
 
     # displaying the score on the screen
-    message(screen, f'Score: {score}', (0, 0), ORANGE, 'Arial', 24, True)
+    message(screen, f'Score1: {snake.score}', (0, 0), ORANGE, 'Arial', 24, True)
 
-    message(screen, f'Record: {record}', (0, 25), ORANGE, 'Arial', 24, True)
+    message(screen, f'Score2: {second_snake.score}', (0, 25), ORANGE, 'Arial', 24, True)
 
     # Update of screen
     pygame.display.update()
@@ -111,6 +139,9 @@ while running:
     # Keeping the cycle on the correct speed
     clock.tick(FPS)
 
+# Creating a message, who won
+message(screen, winner, (20, 160), WHITE, 'Arial', 80)
+time.sleep(3)
 
 # Exit
 pygame.quit()

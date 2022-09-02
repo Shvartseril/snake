@@ -14,7 +14,9 @@ class SelfIntersection(Exception):
 
 class Snake:
     def __init__(self, position: list[tuple[int, int]]):
+        self.direction = False
         self.position = position
+        self.score = 0
 
     def move(self, direction: Direction):
         self.position[1:] = self.position[:-1]
@@ -27,10 +29,15 @@ class Snake:
         if direction == Direction.RIGHT:
             self.position[0] = (self.position[0][0] + 1, self.position[0][1])
         if len(self.position) != len(set(self.position)):
-            raise SelfIntersection()
+            self.position = [(0, 0)]
+            if self.score >= 5:
+                self.score -= 5
+            else:
+                self.score = 0
 
     def eating(self):
         self.position.append((self.position[-1]))
+        self.score += 1
 
     def going_abroad(self):
         # if self.position[0][0] > 19 or self.position[0][0] < -20:
