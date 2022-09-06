@@ -1,6 +1,6 @@
 import pygame
 from snake import Snake, Direction
-from random import *
+from random import randint, choice
 import time
 
 
@@ -40,7 +40,7 @@ REMOTE_COLOR = (0, 204, 205)
 
 WIDTH = 400
 HEIGHT = 600
-FPS = 10
+FPS = 50
 winner = ''
 
 # Initializing objects
@@ -79,20 +79,50 @@ while running:
                 direction = Direction.DOWN
             elif event.key == pygame.K_UP:
                 direction = Direction.UP
-            elif event.key == 97:
-                direction_for_second_snake = Direction.LEFT
-            elif event.key == 100:
-                direction_for_second_snake = Direction.RIGHT
-            elif event.key == 115:
-                direction_for_second_snake = Direction.DOWN
-            elif event.key == 119:
-                direction_for_second_snake = Direction.UP
+            # elif event.key == 97:
+            #     direction_for_second_snake = Direction.LEFT
+            # elif event.key == 100:
+            #     direction_for_second_snake = Direction.RIGHT
+            # elif event.key == 115:
+            #     direction_for_second_snake = Direction.DOWN
+            # elif event.key == 119:
+            #     direction_for_second_snake = Direction.UP
 
     if direction:
         snake.move(direction)
 
     if direction_for_second_snake:
         second_snake.move(direction_for_second_snake)
+
+    next_head = (0, 0)
+
+    if second_snake.position[0][0] > snake_food[0] and direction_for_second_snake not in [Direction.LEFT, Direction.RIGHT]:
+        direction_for_second_snake = Direction.LEFT
+    elif second_snake.position[0][0] < snake_food[0] and direction_for_second_snake not in [Direction.RIGHT, Direction.LEFT]:
+        direction_for_second_snake = Direction.RIGHT
+    elif second_snake.position[0][1] > snake_food[1] and direction_for_second_snake not in [Direction.DOWN, Direction.UP]:
+        direction_for_second_snake = Direction.DOWN
+    elif second_snake.position[0][1] < snake_food[1] and direction_for_second_snake not in [Direction.UP, Direction.DOWN]:
+        direction_for_second_snake = Direction.UP
+
+    if direction_for_second_snake == Direction.UP:
+        next_head = second_snake.position[0][0], second_snake.position[0][1] + 1
+    if direction_for_second_snake == Direction.DOWN:
+        next_head = second_snake.position[0][0], second_snake.position[0][1] - 1
+    if direction_for_second_snake == Direction.LEFT:
+        next_head = second_snake.position[0][0] - 1, second_snake.position[0][1]
+    if direction_for_second_snake == Direction.RIGHT:
+        next_head = second_snake.position[0][0] + 1, second_snake.position[0][1]
+
+    if next_head in second_snake.position:
+        if direction_for_second_snake == Direction.UP:
+            direction_for_second_snake = Direction.RIGHT
+        elif direction_for_second_snake == Direction.RIGHT:
+            direction_for_second_snake = Direction.DOWN
+        elif direction_for_second_snake == Direction.DOWN:
+            direction_for_second_snake = Direction.LEFT
+        elif direction_for_second_snake == Direction.LEFT:
+            direction_for_second_snake = Direction.UP
 
     # creating a border
     snake.going_abroad()
@@ -122,7 +152,7 @@ while running:
     if snake.score == 20:
         winner = 'snake1 won!'
         running = False
-    if second_snake.score == 20:
+    if second_snake.score == 100:
         winner = 'snake2 won!'
         running = False
 

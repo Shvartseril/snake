@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union
 
 
 class Direction(Enum):
@@ -14,9 +15,9 @@ class SelfIntersection(Exception):
 
 class Snake:
     def __init__(self, position: list[tuple[int, int]]):
-        self.direction = False
-        self.position = position
-        self.score = 0
+        self.direction: bool = False
+        self.position: list[tuple[int, int]] = position
+        self.score: int = 0
 
     def move(self, direction: Direction):
         self.position[1:] = self.position[:-1]
