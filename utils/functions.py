@@ -11,12 +11,6 @@ def records_record(score):
     return score
 
 
-# Function for creating a square
-def draw_square(screen, position: tuple[int, int], color: tuple[int, int, int], size: int):
-    position = (position[0] * 10 + 200, position[1] * (-10) + 300)
-    pygame.draw.rect(screen, color, [*position, size, size])
-
-
 # Function for creating messages
 def message(screen, msg: str, coordinates: tuple[int, int], color: tuple[int, int, int], font_name: str, font_size: int, bold: bool = False,
             italic: bool = False):
