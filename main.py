@@ -1,9 +1,15 @@
 import pygame
+import socket
 import settings
 from drawing import drawing_food_and_snake, draw_messages, draw_message_who_won
 from movement import handle_events
+import pickle
 from snake import snake, second_snake, food
 from utils.colors import BLACK
+
+
+# sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# sock.bind(('', 9090))
 
 
 def main():
@@ -15,8 +21,6 @@ def main():
     clock = pygame.time.Clock()
 
     while settings.running:
-
-        settings.running = handle_events()
 
         food.crash()
 
