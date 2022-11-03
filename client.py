@@ -3,7 +3,7 @@ import sys
 import pygame
 import threading
 import pickle
-from server import Snake
+from server import Snake, SnakeFood
 
 
 class Client:
@@ -11,7 +11,6 @@ class Client:
         self.sock = None
         self.direction = None
         self.position: tuple[int, int] = (1, 1)
-        self.snake_food_coordinates: list[tuple[int, int]] = [(5, 5)]
         self.WIDTH: int = 400
         self.HEIGHT: int = 600
         self.screen = None
@@ -19,6 +18,7 @@ class Client:
         self.snake_food_color: tuple[int, int, int] = (0, 255, 0)
         self.FPS: int = 10
         self.snakes = []
+        self.food = (5, 5)
 
     def run(self):
         self.sock = socket.socket()
@@ -32,22 +32,19 @@ class Client:
 
     def handle_connection(self):
         while True:
-            self.snakes = pickle.loads(self.sock.recv(1024))
-            print(self.snakes)
-            # self.draw_run()
-            # self.send_to_server()
+            self.snakes = pickle.loads(self.sock.recv(2048))
+            self.food = pickle.loads(self.sock.recv(2048))
 
     def send_to_server(self):
         self.sock.send(str(self.direction).encode())
 
-    def draw_square(self, color, ppposition):
-        position = (ppposition[0] * 10 + 200, ppposition[1] * (-10) + 300)
+    def draw_square(self, color, old_position):
+        position = (old_position[0] * 10 + 200, old_position[1] * (-10) + 300)
         pygame.draw.rect(self.screen, color, [*position, 10, 10])
 
     def drawing_food_and_snake(self):
         self.screen.fill('black')
-        for i in self.snake_food_coordinates:
-            self.draw_square(self.snake_food_color, i)
+        self.draw_square(self.snake_food_color, self.food)
         for snake in self.snakes:
             for position in snake.position:
                 self.draw_square(self.snake_color, position)

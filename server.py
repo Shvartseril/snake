@@ -1,5 +1,6 @@
 import datetime
 import random
+from random import randint
 import socket
 import threading
 from enum import Enum
@@ -67,6 +68,25 @@ class Snake:
         return str(self.position)
 
 
+class SnakeFood:
+    def __init__(self):
+        self.snake_food = (randint(-19, 19), randint(-29, 29))
+
+    # def crash(self):
+    #     if snake.position[0] in second_snake.position and snake.position[0] != second_snake.position[0]:
+    #         self.snake_food_coordinates += snake.position
+    #         snake.position = [(randint(-19, 19), randint(-29, 29))]
+    #
+    #     if second_snake.position[0] in snake.position and second_snake.position[0] != snake.position[0]:
+    #         self.snake_food_coordinates += second_snake.position
+    #         second_snake.position = [(randint(-19, 19), randint(-29, 29))]
+
+    def eating_food(self, snake):
+        if self.snake_food in snake.position:
+            self.snake_food = (randint(-19, 19), randint(-29, 29))
+            snake.eating()
+
+
 class Server:
 
     def __init__(self,
@@ -77,19 +97,18 @@ class Server:
         self.port: int = port
         self.field_size = field_size
         self.snakes: list = []
-        self.food: list = []
-        self.FPS: int = 2
+        self.FPS: int = 10
         self.sock = None
         self.client_sockets: list[socket.socket] = []
         self.connections = []
         self.direction = None
+        self.food = SnakeFood()
 
     def flick_world(self):
         for snake in self.snakes:
             snake.move()
-        # feed snakes
-        # handle collisions
-        # create food
+            snake.going_abroad()
+            self.food.eating_food(snake)
 
     def run(self):
         self.sock = socket.socket()
@@ -135,13 +154,9 @@ class Server:
     def send_all_connections(self):
         for client_socket in self.client_sockets:
             client_socket.send(pickle.dumps(self.snakes))
-        # for i in range(10):
-        #     self.connection.send(str('why it doesnt work nigga').encode())
+            client_socket.send(pickle.dumps(self.food.snake_food))
 
 
 if __name__ == '__main__':
     beta_server = Server(port=8110)
     beta_server.run()
-
-# x2 = threading.Thread(target=beta_server.send_all_connections)
-# x2.start()
