@@ -7,6 +7,9 @@ from enum import Enum
 import pickle
 
 
+ID = int
+
+
 class Direction(Enum):
     UP = 1
     RIGHT = 2
@@ -32,9 +35,7 @@ class Snake:
         if self.direction is None:
             return
         self.position[1:] = self.position[:-1]
-        print('movinggggg', self.direction, type(self.direction), Direction.UP.value)
         if self.direction == Direction.UP.value:
-            print('HEEEEYEYYYYYY!!!!')
             self.position[0] = (self.position[0][0], self.position[0][1] + 1)
         if self.direction == Direction.DOWN.value:
             self.position[0] = (self.position[0][0], self.position[0][1] - 1)
@@ -44,10 +45,6 @@ class Snake:
             self.position[0] = (self.position[0][0] + 1, self.position[0][1])
         if len(self.position) != len(set(self.position)):
             self.position = [(0, 0)]
-            if self.score >= 5:
-                self.score -= 5
-            else:
-                self.score = 0
 
     # remove magic numbers
     def going_abroad(self):
@@ -62,29 +59,40 @@ class Snake:
 
     def eating(self):
         self.position.append((self.position[-1]))
-        self.score += 1
 
     def __repr__(self):
         return str(self.position)
 
 
+class Message:
+    def __init__(self, msg: str, snakes: list[Snake], food: list[tuple[int, int]]):
+        self.msg = msg
+        self.snakes = snakes
+        self.food = food
+
+
+class Player:
+    def __init__(self, snake: Snake, player_socket: socket.socket, player_id: ID):
+        self.snake: Snake = snake
+        self.socket: socket.socket = player_socket
+        self.id = player_id
+
+
 class SnakeFood:
     def __init__(self):
-        self.snake_food = (randint(-19, 19), randint(-29, 29))
+        self.snake_food: list[tuple[int, int]] = [(randint(-19, 19), randint(-29, 29))]
 
-    # def crash(self):
-    #     if snake.position[0] in second_snake.position and snake.position[0] != second_snake.position[0]:
-    #         self.snake_food_coordinates += snake.position
-    #         snake.position = [(randint(-19, 19), randint(-29, 29))]
-    #
-    #     if second_snake.position[0] in snake.position and second_snake.position[0] != snake.position[0]:
-    #         self.snake_food_coordinates += second_snake.position
-    #         second_snake.position = [(randint(-19, 19), randint(-29, 29))]
+    # def crash(self, snakes):
+    #     for frst_snake in snakes:
+    #         for scnd_snake in snakes:
+    #             if frst_snake.position[0] in scnd_snake.position and frst_snake.position[0] != scnd_snake.position[0]:
+    #                 frst_snake.position = [(randint(-19, 19), randint(-29, 29))]
 
     def eating_food(self, snake):
-        if self.snake_food in snake.position:
-            self.snake_food = (randint(-19, 19), randint(-29, 29))
-            snake.eating()
+        for food_id in range(len(self.snake_food)):
+            if self.snake_food[food_id] in snake.position:
+                self.snake_food[food_id] = (randint(-19, 19), randint(-29, 29))
+                snake.eating()
 
 
 class Server:
@@ -96,19 +104,19 @@ class Server:
         self.ip: str = ip
         self.port: int = port
         self.field_size = field_size
-        self.snakes: list = []
         self.FPS: int = 10
         self.sock = None
         self.client_sockets: list[socket.socket] = []
-        self.connections = []
-        self.direction = None
         self.food = SnakeFood()
+        self.max_id: int = 1
+        self.players: dict[ID, Player] = {}
 
     def flick_world(self):
-        for snake in self.snakes:
-            snake.move()
-            snake.going_abroad()
-            self.food.eating_food(snake)
+        for player in self.players.values():
+            # self.food.crash(player.snake)
+            player.snake.move()
+            player.snake.going_abroad()
+            self.food.eating_food(player.snake)
 
     def run(self):
         self.sock = socket.socket()
@@ -127,19 +135,21 @@ class Server:
     def handle_connection(self,
                           connection: socket.socket,
                           snake_name: str = 'username'):
-        new_snake = Snake(position=[(random.randint(0, 10), random.randint(0, 10)),],name=snake_name)
-        self.snakes.append(new_snake)
+        new_snake = Snake(position=[(random.randint(0, 10), random.randint(0, 10))], name=snake_name)
+        current_player_id = self.max_id
+        # new_snake = Snake(position=[(0, 0)], name=snake_name)
+        self.players[current_player_id] = Player(new_snake, connection, current_player_id)
+        self.max_id += 1
         direction = Direction.RIGHT.value
 
         while direction:
             new_snake.direction = direction
-            print(direction)
-            print(new_snake.direction)
             try:
                 direction = int(connection.recv(1024).decode())
             except ValueError:
                 pass
-        # Remove snake
+            except ConnectionResetError:
+                self.players.pop(current_player_id)
 
     def receive_connections(self):
         print('start recv conn')
@@ -152,9 +162,23 @@ class Server:
             waiter.start()
 
     def send_all_connections(self):
-        for client_socket in self.client_sockets:
-            client_socket.send(pickle.dumps(self.snakes))
-            client_socket.send(pickle.dumps(self.food.snake_food))
+        message = Message('ok', [player.snake for player in self.players.values()], self.food.snake_food)
+        ids_to_pop = []
+        for player in self.players.values():
+            try:
+                player.socket.send(pickle.dumps(message))
+            except ConnectionResetError:
+                ids_to_pop.append(player.id)
+        for id_to_pop in ids_to_pop:
+            self.players.pop(id_to_pop)
+
+            # print(self.snakes, '=self.snakes')
+            # print(self.food.snake_food, '=self.food')
+            #
+            # client_socket.send(pickle.dumps(self.snakes))
+            # print(f'self.snakes ({self.snakes}) have been sent')
+            # client_socket.send(pickle.dumps(self.food.snake_food))
+            # print(f'self.food.snake_food ({self.food.snake_food}) have been sent')
 
 
 if __name__ == '__main__':
