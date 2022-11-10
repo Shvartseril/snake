@@ -5,6 +5,7 @@ import threading
 import pickle
 import time
 from server import Snake, SnakeFood, Message
+from random import randint
 
 
 class Client:
@@ -15,7 +16,6 @@ class Client:
         self.WIDTH: int = 400
         self.HEIGHT: int = 600
         self.screen = None
-        self.snake_color: tuple[int, int, int] = (255, 0, 0)
         self.snake_food_color: tuple[int, int, int] = (0, 255, 0)
         self.FPS: int = 10
         self.snakes = []
@@ -23,7 +23,7 @@ class Client:
 
     def run(self):
         self.sock = socket.socket()
-        self.sock.connect(('localhost', 8110))
+        self.sock.connect(('37.228.116.65', 8110))
         get_field_state_thread = threading.Thread(target=self.handle_connection)
         get_field_state_thread.start()
         notify_server_thread = threading.Thread(target=self.send_to_server)
@@ -46,15 +46,15 @@ class Client:
         self.sock.send(str(self.direction).encode())
 
     def draw_square(self, color, old_position):
-        if type(old_position) == list:
-            # print('Михаил, обычно type(old_position) == tuple, но СЕЙЧАС ОН LIST')
-            # print('ОН иногда СТАНОВИТСЯ LISTом, а иногда нет! Я НЕ ПОНИМАЮ ПОЧЕМУ ЭТО ЕМАЕЕЕЕЕ')
-            # print('У МЕНЯ ИЗ-ЗА ЭТОГО ВЕСЬ КОД ЛОМАЕТСЯ К ЧЕРТЯМ')
-            print('Почему-то в один момент self.food == self.snakes')
-            print(self.snakes, '=self.snakes')
-            print(self.food, '=self.food')
-            print(old_position, '=old_position')
-            print(type(old_position), '=type(old_position()')
+        # if type(old_position) == list:
+        #     print('Михаил, обычно type(old_position) == tuple, но СЕЙЧАС ОН LIST')
+        #     print('ОН иногда СТАНОВИТСЯ LISTом, а иногда нет! Я НЕ ПОНИМАЮ ПОЧЕМУ ЭТО ЕМАЕЕЕЕЕ')
+        #     print('У МЕНЯ ИЗ-ЗА ЭТОГО ВЕСЬ КОД ЛОМАЕТСЯ К ЧЕРТЯМ')
+        #     print('Почему-то в один момент self.food == self.snakes')
+        #     print(self.snakes, '=self.snakes')
+        #     print(self.food, '=self.food')
+        #     print(old_position, '=old_position')
+        #     print(type(old_position), '=type(old_position()')
 
         position = (old_position[0] * 10 + 200, old_position[1] * (-10) + 300)
         pygame.draw.rect(self.screen, color, [*position, 10, 10])
@@ -65,7 +65,7 @@ class Client:
             self.draw_square(self.snake_food_color, food)
         for snake in self.snakes:
             for position in snake.position:
-                self.draw_square(self.snake_color, position)
+                self.draw_square(snake.color, position)
 
     def draw_run(self):
         pygame.init()

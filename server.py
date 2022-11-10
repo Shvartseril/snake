@@ -30,6 +30,7 @@ class Snake:
         self.direction = Direction.RIGHT.value
         self.winner = None
         self.name = name
+        self.color = (randint(100, 255), 0, randint(100, 255))
 
     def move(self):
         if self.direction is None:
@@ -113,7 +114,7 @@ class Server:
 
     def flick_world(self):
         for player in self.players.values():
-            # self.food.crash(player.snake)
+            # self.food.crash(player.Snake)
             player.snake.move()
             player.snake.going_abroad()
             self.food.eating_food(player.snake)
