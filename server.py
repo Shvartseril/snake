@@ -1,5 +1,4 @@
 import datetime
-import random
 from random import randint
 import socket
 import threading
@@ -47,7 +46,6 @@ class Snake:
         if len(self.position) != len(set(self.position)):
             self.position = [(0, 0)]
 
-    # remove magic numbers
     def going_abroad(self):
         if self.position[0][0] < -20:
             self.position[0] = 19, self.position[0][1]
@@ -62,7 +60,7 @@ class Snake:
         self.position.append((self.position[-1]))
 
     def __repr__(self):
-        return str(self.position)
+        return f'{str(self.position)} repr in class Snake'
 
 
 class Message:
@@ -83,17 +81,25 @@ class SnakeFood:
     def __init__(self):
         self.snake_food: list[tuple[int, int]] = [(randint(-19, 19), randint(-29, 29))]
 
-    # def crash(self, snakes):
-    #     for frst_snake in snakes:
-    #         for scnd_snake in snakes:
-    #             if frst_snake.position[0] in scnd_snake.position and frst_snake.position[0] != scnd_snake.position[0]:
-    #                 frst_snake.position = [(randint(-19, 19), randint(-29, 29))]
-
     def eating_food(self, snake):
         for food_id in range(len(self.snake_food)):
             if self.snake_food[food_id] in snake.position:
                 self.snake_food[food_id] = (randint(-19, 19), randint(-29, 29))
                 snake.eating()
+
+
+def crash(players: dict[ID, Player]):
+    lst_head = [player.snake.position[0] for player in players.values()]
+    dict_of_snakes_body = dict()
+    for player in players.values():
+        for position in range(1, len(player.snake.position)):
+            if player.snake.position[position] == player.snake.position[0]:
+                continue
+            dict_of_snakes_body[player.snake.position[position]] = player.snake
+    for head in lst_head:
+        if head in dict_of_snakes_body.keys():
+            snake_crash = dict_of_snakes_body.get(head)
+            snake_crash.position = [snake_crash.position[:i] for i in range(len(snake_crash.position)) if snake_crash.position[i] == head][0]
 
 
 class Server:
@@ -114,10 +120,10 @@ class Server:
 
     def flick_world(self):
         for player in self.players.values():
-            # self.food.crash(player.Snake)
             player.snake.move()
             player.snake.going_abroad()
             self.food.eating_food(player.snake)
+        crash(self.players)
 
     def run(self):
         self.sock = socket.socket()
@@ -136,9 +142,8 @@ class Server:
     def handle_connection(self,
                           connection: socket.socket,
                           snake_name: str = 'username'):
-        new_snake = Snake(position=[(random.randint(0, 10), random.randint(0, 10))], name=snake_name)
+        new_snake = Snake(position=[(0, 0), (0, 1), (0, 2), (0, 3), (0, 4), (0, 5)], name=snake_name)
         current_player_id = self.max_id
-        # new_snake = Snake(position=[(0, 0)], name=snake_name)
         self.players[current_player_id] = Player(new_snake, connection, current_player_id)
         self.max_id += 1
         direction = Direction.RIGHT.value
@@ -150,7 +155,11 @@ class Server:
             except ValueError:
                 pass
             except ConnectionResetError:
-                self.players.pop(current_player_id)
+                try:
+                    self.players.pop(current_player_id)
+                except KeyError:
+                    print('Keycrash')
+                    return
 
     def receive_connections(self):
         print('start recv conn')
@@ -165,21 +174,20 @@ class Server:
     def send_all_connections(self):
         message = Message('ok', [player.snake for player in self.players.values()], self.food.snake_food)
         ids_to_pop = []
-        for player in self.players.values():
-            try:
-                player.socket.send(pickle.dumps(message))
-            except ConnectionResetError:
-                ids_to_pop.append(player.id)
-        for id_to_pop in ids_to_pop:
-            self.players.pop(id_to_pop)
+        try:
+            for player in self.players.values():
+                try:
+                    player.socket.send(pickle.dumps(message))
+                except ConnectionResetError:
+                    ids_to_pop.append(player.id)
+        except RuntimeError:
+            print('RuntimeError')
 
-            # print(self.snakes, '=self.snakes')
-            # print(self.food.snake_food, '=self.food')
-            #
-            # client_socket.send(pickle.dumps(self.snakes))
-            # print(f'self.snakes ({self.snakes}) have been sent')
-            # client_socket.send(pickle.dumps(self.food.snake_food))
-            # print(f'self.food.snake_food ({self.food.snake_food}) have been sent')
+        for id_to_pop in ids_to_pop:
+            try:
+                self.players.pop(id_to_pop)
+            except KeyError:
+                print('keyerror')
 
 
 if __name__ == '__main__':

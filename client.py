@@ -3,9 +3,7 @@ import sys
 import pygame
 import threading
 import pickle
-import time
 from server import Snake, SnakeFood, Message
-from random import randint
 
 
 class Client:
@@ -24,6 +22,7 @@ class Client:
     def run(self):
         self.sock = socket.socket()
         self.sock.connect(('37.228.116.65', 8110))
+        # self.sock.connect(('localhost', 8110))
         get_field_state_thread = threading.Thread(target=self.handle_connection)
         get_field_state_thread.start()
         notify_server_thread = threading.Thread(target=self.send_to_server)
